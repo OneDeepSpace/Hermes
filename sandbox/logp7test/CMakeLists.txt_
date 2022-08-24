@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 3.16)
+project(logp7 VERSION 0.1.0)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
+# setup P7 log library env
+set(LIB_DIR ${PROJECT_SOURCE_DIR}/../../libs)
+set(P7_DIR ${LIB_DIR}/P7)
+set(P7_INCLUDE ${P7_DIR}/include)
+set(P7_LIB ${P7_DIR}/lib)
+
+find_library(P7Lib NAMES p7 PATHS ${P7_LIB} NO_DEFAULT_PATH)
+message(STATUS "Find result: ${P7Lib}")
+set(LIBS -ldl ${P7Lib} -pthread -lrt)
+#set(LIBS -ldl libp7.a -pthread -lrt)
+#set(LIBS -ldl p7 -pthread -lrt)
+
+include_directories(${P7_INCLUDE})
+link_directories(${P7_LIB})
+
+message(STATUS "libs directory: ${LIB_DIR}")
+message(STATUS "P7 directory  : ${P7_DIR}")
+
+add_executable(${PROJECT_NAME} logp7.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${LIBS})
