@@ -1,3 +1,10 @@
+# CLion
+.idea/
+cmake-build-debug/
+build/
+
+bin/
+
 # Prerequisites
 *.d
 
@@ -21,10 +28,10 @@
 *.smod
 
 # Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+#*.lai
+#*.la
+#*.a
+#*.lib
 
 # Executables
 *.exe
