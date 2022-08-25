@@ -4,7 +4,7 @@ project(hermesnet VERSION 0.5.0)
 
 set(SOURCES
 		${HERMESNET_DIR}/hermes/log/log.cpp
-		${HERMESNET_DIR}/hermes/message/message.hpp
+		${HERMESNET_DIR}/hermes/message/message_generator.cpp
 		${HERMESNET_DIR}/hermes/data_receiver/receiver.cpp
 		${HERMESNET_DIR}/hermes/data_sender/sender.cpp
 		${HERMESNET_DIR}/hermes/loop/mainloop.cpp)

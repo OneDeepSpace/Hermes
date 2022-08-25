@@ -5,10 +5,10 @@
 #include <iomanip>
 #include <hermes/log/log.h>
 #include <hermes/common/structures.h>
-#include <hermes/message/message.hpp>
+#include <hermes/message/message_generator.h>
 
 using namespace network;
-using namespace network::message;
+using namespace network::message::v2;
 using namespace utility::logger;
 
 namespace
@@ -54,7 +54,7 @@ DataReceiver::readFromEntrySocket(Socket& socket, std::uint8_t code)
     boost::system::error_code ec;
     net::ip::udp::endpoint remote_endpoint;
 
-    message::message_block_t<message_id> msg {};
+    message::v2::message_block_t<message_id> msg {};
     auto wrapper { boost::asio::buffer(&msg, 64) };
 
     std::vector<std::uint8_t> chunk (MESSAGE_SIZE, 0x0);
@@ -89,7 +89,7 @@ DataReceiver::readFromEntrySocket(Socket& socket, std::uint8_t code)
             LOG(ss.str().c_str())
         }
 
-        if (msg.header.type.action == message::message_id::action_t::PING) {
+        if (msg.header.type.action == message::v2::message_id::action_t::PING) {
             test::point_t point_received;
             msg.extract(point_received);
 

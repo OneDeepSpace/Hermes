@@ -2,8 +2,9 @@
 #include <iostream>
 
 #include <boost/asio.hpp>
+#include <hermes/common/types.h>
 #include <hermes/common/common.h>
-#include <hermes/message/message.hpp>
+#include <hermes/message/message_generator.h>
 #include <hermes/common/structures.h>
 
 namespace
@@ -78,7 +79,7 @@ int main()
         const char* pStr = payload.data();
 
         // with struct point_t
-        using namespace message;
+        using namespace message::v2;
         message_block_t<message_id> msg_point;
         msg_point.header.type.action = message_id::action_t::PING;
         msg_point.header.access_code = 0xEA;

@@ -73,9 +73,9 @@ namespace utility::logger
 
         static void init(std::string settings, std::string const& name);
 
-        Logger(Logger&) = delete;
+        Logger(const Logger&) = delete;
         Logger(Logger&&) = delete;
-        Logger& operator=(Logger&) = delete;
+        Logger& operator=(const Logger&) = delete;
         Logger& operator=(Logger&&) = delete;
 
     public:
