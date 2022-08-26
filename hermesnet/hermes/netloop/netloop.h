@@ -17,7 +17,7 @@ namespace network
     /*
      *  Цикл обработки сетевых сообщений
      */
-    class MainLoop : boost::noncopyable
+    class NetLoop : boost::noncopyable
     {
     private:
         std::thread         inThread_, outThread_;
@@ -27,8 +27,8 @@ namespace network
         std::unique_ptr<ISender>    sender_     { nullptr };
 
     public:
-        explicit MainLoop(std::unique_ptr<IReceiver> r, std::unique_ptr<ISender> s);
-        virtual ~MainLoop();
+        explicit NetLoop(std::unique_ptr<IReceiver> r, std::unique_ptr<ISender> s);
+        virtual ~NetLoop();
 
         // todo: better return value
         bool runThreads();
@@ -40,7 +40,7 @@ namespace network
         // Подготовить и отправить сообщения клиентам
         void processOutcoming();
 
-    };  // MainLoop
+    };  // NetLoop
 
 }   // namespace network
 

@@ -3,7 +3,7 @@
 
 #include <boost/noncopyable.hpp>
 
-#include <hermes/loop/mainloop.h>
+#include <hermes/netloop/netloop.h>
 #include <hermes/common/structures.h>
 
 namespace network::service
@@ -27,7 +27,7 @@ namespace network::service
         // Event event_;
         class Entry     entry_;
         class Clients   clients_;
-        class MainLoop  loop_;
+        class NetLoop   netloop_;
 
         // todo: make special buffer class for message exchange logic (read/write flags) with event class (todo too)
         std::vector<std::uint8_t> incomingBuffer;

@@ -11,7 +11,7 @@ set(SOURCES
 		${HERMESNET_DIR}/hermes/data_sender/server_data_sender.cpp
 		${HERMESNET_DIR}/hermes/service/client/client.cpp
 		${HERMESNET_DIR}/hermes/service/server/server.cpp
-		${HERMESNET_DIR}/hermes/loop/mainloop.cpp)
+		${HERMESNET_DIR}/hermes/netloop/netloop.cpp)
         
 set(LIBS
 		${P7Lib}

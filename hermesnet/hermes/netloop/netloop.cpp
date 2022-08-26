@@ -1,5 +1,5 @@
 
-#include "mainloop.h"
+#include "netloop.h"
 
 #include <thread>
 #include <hermes/log/log.h>
@@ -10,32 +10,32 @@ using namespace utility::logger;
 namespace
 {
     #define LOG(text) \
-            Logger::getInstance().log(EModule::LOOP, (text));
+            Logger::getInstance().log(EModule::NETLOOP, (text));
 }
 
-MainLoop::MainLoop(std::unique_ptr<IReceiver> r, std::unique_ptr<ISender> s)
+NetLoop::NetLoop(std::unique_ptr<IReceiver> r, std::unique_ptr<ISender> s)
     : bStopNetThreads_(false)
 {
     receiver_ = std::forward<decltype(r)>(r);
     sender_ = std::forward<decltype(s)>(s);
 
-    LOG_REGISTER_MODULE(EModule::LOOP)
+    LOG_REGISTER_MODULE(EModule::NETLOOP)
 }
 
-MainLoop::~MainLoop()
+NetLoop::~NetLoop()
 {
     stopThreads();
 }
 
-bool MainLoop::runThreads()
+bool NetLoop::runThreads()
 {
     LOG("run network threads")
-    inThread_ = std::thread(&MainLoop::processIncoming, this);
-    outThread_ = std::thread(&MainLoop::processOutcoming, this);
+    inThread_ = std::thread(&NetLoop::processIncoming, this);
+    outThread_ = std::thread(&NetLoop::processOutcoming, this);
     return true;
 }
 
-void MainLoop::stopThreads()
+void NetLoop::stopThreads()
 {
     bStopNetThreads_.store(true, std::memory_order::memory_order_acquire);
 
@@ -45,7 +45,7 @@ void MainLoop::stopThreads()
     LOG("network threads stopped")
 }
 
-void MainLoop::processIncoming()
+void NetLoop::processIncoming()
 {
     if (!receiver_)
         throw std::runtime_error("receiver not initialized");
@@ -63,7 +63,7 @@ void MainLoop::processIncoming()
     LOG("end of net::in_process loop")
 }
 
-void MainLoop::processOutcoming()
+void NetLoop::processOutcoming()
 {
     if (!sender_)
         throw std::runtime_error("sender not initialized");

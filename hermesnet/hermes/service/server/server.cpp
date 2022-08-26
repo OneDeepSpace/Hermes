@@ -23,7 +23,7 @@ namespace
 
 Server::Server() noexcept
     : entry_(ios_)
-    , loop_(std::make_unique<ServerDataReceiver>(ios_, entry_, clients_), std::make_unique<ServerDataSender>())
+    , netloop_(std::make_unique<ServerDataReceiver>(ios_, entry_, clients_), std::make_unique<ServerDataSender>())
 {
     LOG_REGISTER_MODULE(EModule::SERVER)
 
@@ -52,7 +52,7 @@ bool Server::start(std::pair<std::uint16_t, std::uint16_t> ports)
     }
 
     init(ports);
-    loop_.runThreads();
+    netloop_.runThreads();
 
     {
         std::stringstream ss;
@@ -65,7 +65,7 @@ bool Server::start(std::pair<std::uint16_t, std::uint16_t> ports)
 
 bool Server::stop()
 {
-    loop_.stopThreads();
+    netloop_.stopThreads();
     ios_.stop();
 
     LOG("closing sockets")

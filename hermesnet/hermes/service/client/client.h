@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <hermes/loop/mainloop.h>
+#include <hermes/netloop/netloop.h>
 
 namespace network::service
 {
