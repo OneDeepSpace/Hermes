@@ -5,15 +5,15 @@
 #include <iostream>
 #include <exception>
 #include <hermes/log/log.h>
-#include <hermes/loop/mainloop.h>
+#include <hermes/service/server/server.h>
 
 using namespace network;
 using namespace utility::logger;
 
 namespace
 {
-#define LOG(text) \
-    utility::logger::Logger::getInstance().log(EModule::MAIN, (text));
+    #define LOG(text) \
+        utility::logger::Logger::getInstance().log(EModule::MAIN, (text));
 }
 
 int main()
@@ -29,13 +29,9 @@ int main()
 
     try
     {
-        MainLoop loop;
-        if (loop.start())
-        {
-            std::string l {"server started on port - "};
-            l.append(std::to_string(SERVER_IN_PORT));
-            LOG(l.c_str())
-        }
+        using namespace service;
+        Server server;
+        server.start( {7000, 7001} );
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10'000));
     }

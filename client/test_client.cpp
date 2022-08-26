@@ -2,8 +2,9 @@
 #include <iostream>
 
 #include <boost/asio.hpp>
+#include <hermes/common/types.h>
 #include <hermes/common/common.h>
-#include <hermes/message/message.hpp>
+#include <hermes/message/message_generator.h>
 #include <hermes/common/structures.h>
 
 namespace
@@ -60,8 +61,8 @@ int main()
 
         socket.non_blocking(true);
 
-        socket.set_option(net::ip::udp::socket::send_buffer_size(SOCK_BUF_SIZE));
-        socket.set_option(net::ip::udp::socket::receive_buffer_size(SOCK_BUF_SIZE));
+        socket.set_option(net::ip::udp::socket::send_buffer_size(8192));
+        socket.set_option(net::ip::udp::socket::receive_buffer_size(8192));
         socket.set_option(net::ip::udp::socket::reuse_address(true));
         const std::uint32_t dummyBoostTemplateParam {0};
         socket.set_option(net::ip::udp::socket::linger(false, dummyBoostTemplateParam));
@@ -78,9 +79,9 @@ int main()
         const char* pStr = payload.data();
 
         // with struct point_t
-        using namespace message;
-        message_block_t<message_id> msg_point;
-        msg_point.header.type.action = message_id::action_t::PING;
+        using namespace message::v2;
+        message_block_t<service_type> msg_point;
+        msg_point.header.type.action = service_type::action_t::PING;
         msg_point.header.access_code = 0xEA;
         msg_point.header.uuid = 42;
         //msg.insert(pStr, payload.size()); // todo: make helper function for string
@@ -98,7 +99,7 @@ int main()
 //        const char* s {"[test udp message]"};
 //        msg_text.insert(s, strlen(s));
 
-        auto server_endpoint { net::ip::udp::endpoint(net::ip::address::from_string("127.0.0.1"), SERVER_IN_PORT)};
+        auto server_endpoint { net::ip::udp::endpoint(net::ip::address::from_string("127.0.0.1"), 7000)};
         {
             std::stringstream ss;
             ss << "try to send messages to " << server_endpoint;

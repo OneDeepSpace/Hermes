@@ -89,7 +89,8 @@ bool Logger::registerModule(EModule name) noexcept
 {
     bool b { trace_.registerModule(name) };
     std::stringstream ss;
-    ss << "module " << std::quoted(getModuleName(name), '*') << " registered " << (b ? "" : "failed");
+    const char* status { b ? "successful" : "error" };
+    ss << "log module " << std::quoted(getModuleName(name)) << " registration - " << status;
     log(name, ss.str().c_str());
     return b;
 }

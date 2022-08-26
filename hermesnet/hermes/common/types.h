@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace network
+namespace network::types
 {
     //todo: move to config module
     static constexpr std::uint16_t SERVER_IN_PORT {7000};

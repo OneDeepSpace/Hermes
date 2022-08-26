@@ -9,7 +9,7 @@ namespace utility::logger
         MAIN = 0,
         SERVER,
         CLIENT,
-        LOOP,
+        NETLOOP,
         RECEIVER,
         SENDER,
         MESSAGE     // temp !!!
@@ -22,7 +22,7 @@ namespace utility::logger
             case EModule::MAIN:     return "main";
             case EModule::SERVER:   return "server";
             case EModule::CLIENT:   return "client";
-            case EModule::LOOP:     return "loop";
+            case EModule::NETLOOP:  return "netloop";
             case EModule::RECEIVER: return "receiver";
             case EModule::SENDER:   return "sender";
             case EModule::MESSAGE:  return "message";
