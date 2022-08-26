@@ -15,6 +15,14 @@
 
 namespace network::message::v2
 {
+    // TODO: place into config
+    constexpr std::uint8_t  SERVER_ACCESS_CODE      {0xEA};
+    constexpr std::uint8_t  END_MESSAGE_BYTE        {0xFF};
+
+
+    constexpr std::uint32_t ACCESS_BYTE_POS         {7};
+    constexpr std::uint32_t END_MESSAGE_BYTE_POS    {63};
+
     /**
      *  Cетевое сообщение (пакет).
      *  Состоит из заголовка, описывающего тип сообщения и

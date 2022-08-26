@@ -4,24 +4,25 @@
 #include <cstdint>
 #include <algorithm>
 
-// TODO:
-//  - разделить на логику приложения и игровые
+
 
 namespace network::message::v2
 {
+
+
     /**
-     *  Тип сетевого сообщения. Отвечает за логику обработки
-     *  сообщения и указывает способ, которым его нужно переслать.
+     *  Сервисные сообщения, общие для любого приложения.
+     *
      *  Размер - 4 байта
      */
-    struct message_id
+    struct service_type
     {
-        message_id() = default;
+        service_type() = default;
         // noncopyable
-        message_id(const message_id&) = delete;
-        message_id& operator= (const message_id&) = delete;
+        service_type(const service_type&) = delete;
+        service_type& operator= (const service_type&) = delete;
 
-        message_id(message_id&& other) noexcept
+        service_type(service_type&& other) noexcept
             : action(action_t::NONE)
             , reserved(reserved_t::NONE)
         {
@@ -29,7 +30,7 @@ namespace network::message::v2
             std::swap(reserved, other.reserved);
         }
 
-        message_id& operator= (message_id&& other) noexcept
+        service_type& operator= (service_type&& other) noexcept
         {
             if (this != &other)
             {
@@ -46,7 +47,71 @@ namespace network::message::v2
             PING,
             CONNECT,
             DISCONNECT,
-            ACTION,
+        };
+
+        // *** reserved field ***
+        enum class reserved_t : std::uint16_t
+        {
+            NONE = 0
+        };
+
+        // ---------------------------------------------------------------------------------------
+        action_t    action;         // action id                    [2 byte]
+        reserved_t  reserved;       // reserved field               [2 byte]
+        // ---------------------------------------------------------------------------------------
+
+        friend std::ostream& operator<< (std::ostream& os, const service_type& id) {
+            std::string s;
+
+            os << std::hex << "[ action - ";
+            switch(id.action)
+            {
+                case action_t::PING:            os << "PING";           break;
+                case action_t::CONNECT:         os << "CONNECT";        break;
+                case action_t::DISCONNECT:      os << "DISCONNECT";     break;
+                default: os << "unknown!!!";
+            }
+
+            return os << s << " ]";
+        }
+
+    };  // service_type
+
+    /**
+     *  Сообщения чат-мессенджера
+     *  TODO: должны быть в папке проекта
+     *
+     *  Размер - 4 байта
+     */
+    struct chat_app_type
+    {
+        chat_app_type() = default;
+        // noncopyable
+        chat_app_type(const chat_app_type&) = delete;
+        chat_app_type& operator= (const chat_app_type&) = delete;
+
+        chat_app_type(chat_app_type&& other) noexcept
+            : action(action_t::NONE)
+            , reserved(reserved_t::NONE)
+        {
+            std::swap(action, other.action);
+            std::swap(reserved, other.reserved);
+        }
+
+        chat_app_type& operator= (chat_app_type&& other) noexcept
+        {
+            if (this != &other)
+            {
+                std::swap(action, other.action);
+                std::swap(reserved, other.reserved);
+            }
+            return *this;
+        }
+
+        // ID - тип сообщения
+        enum class action_t : std::uint16_t
+        {
+            NONE = 0,
             CHAT_MESSAGE,
             // ...add more
         };
@@ -62,22 +127,18 @@ namespace network::message::v2
         reserved_t  reserved;       // reserved field               [2 byte]
         // ---------------------------------------------------------------------------------------
 
-        friend std::ostream& operator<< (std::ostream& os, const message_id& id) {
+        friend std::ostream& operator<< (std::ostream& os, const chat_app_type& id) {
             std::string s;
 
             os << std::hex << "[ action - ";
             switch(id.action)
             {
-                case action_t::PING:            os << "PING";           break;
-                case action_t::CONNECT:         os << "CONNECT";        break;
-                case action_t::DISCONNECT:      os << "DISCONNECT";     break;
-                case action_t::ACTION:          os << "ACTION";         break;
                 case action_t::CHAT_MESSAGE:    os << "CHAT_MESSAGE";   break;
                 default: os << "unknown!!!";
             }
 
             return os << s << " ]";
         }
-    }; // message_id
+    }; // chat_app_type
 
 }   // network::message::v2

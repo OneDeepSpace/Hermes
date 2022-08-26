@@ -4,20 +4,25 @@
 
 namespace network::message::v2
 {
-    constexpr std::uint8_t  SERVER_ACCESS_CODE      {0xEA};
-    constexpr std::uint8_t  END_MESSAGE_BYTE        {0xFF};
-    constexpr std::uint32_t ACCESS_BYTE_POS         {7};
-    constexpr std::uint32_t END_MESSAGE_BYTE_POS    {63};
-
     /*
-     *  Net message factory
+     *  Net message builder
      */
+    template<typename MessageTypeId>
     class MessageGenerator
     {
     public:
-        template <typename T>
-        static void generate();
+        // Сгенерировать сообщение(-я) в зависимости от Типа сообщений приложения и размера полезной нагрузки.
+        // Если размер payload'a больше чем может вместить одно сообщение - создаётся необходимое
+        // количество сетевых пакетов для отправки.
+        template <typename PayloadType>
+        static std::vector<message_block_t<MessageTypeId>>
+        generate(MessageTypeId typeId, PayloadType payload, std::size_t len) noexcept;
+
+
+
     };
+
+
 
 //    /**
 //     * Подготовить сетевой пакет к отправке установив байты
