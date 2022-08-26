@@ -23,7 +23,7 @@
     Work In Progress..
 
 ## Версия
-    0.5.0
+    0.5.5
 
 ## TODO
     0)  config module -> boost::program_options + {unit}.ini file
