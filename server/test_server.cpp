@@ -5,15 +5,20 @@
 #include <iostream>
 #include <exception>
 #include <hermes/log/log.h>
-#include <hermes/service/server/server.h>
 
-using namespace network;
+#include <hermes/service/server/server.h>
+//#include <hermes/service/server/server.cpp>
+
+#include <hermes/message/message_id.h>
+
+using namespace network::service;
+using namespace network::message::v2;
 using namespace utility::logger;
 
 namespace
 {
-    #define LOG(text) \
-        utility::logger::Logger::getInstance().log(EModule::MAIN, (text));
+#undef  LOG
+#define LOG(text) utility::logger::Logger::getInstance().log(EModule::MAIN, (text));
 }
 
 int main()
@@ -29,8 +34,7 @@ int main()
 
     try
     {
-        using namespace service;
-        Server server;
+        Server<chat_app_type> server;
         server.start( {7000, 7001} );
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10'000));

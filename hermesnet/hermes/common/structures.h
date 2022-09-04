@@ -19,21 +19,23 @@ namespace network
             , out(ios)
         {}
 
-        net::ip::udp::socket in;
-        net::ip::udp::socket out;
-        std::uint8_t accessCode;
+        net::ip::udp::socket    in;         // in service udp port
+        net::ip::udp::socket    out;        // out service udp port
+        std::uint8_t            accessCode; // access byte for each service datagram
     };
+
+    typedef Entry Client;
 
     /*
      * Structure of Arrays
      */
     struct Clients
     {
-        std::vector<net::ip::udp::socket> vIn;
-        std::vector<net::ip::udp::socket> vOut;
-        std::vector<net::ip::udp::endpoint> vEndpoints;
-        std::vector<std::uint32_t> vUUIDs;
-        std::vector<std::uint8_t> vAccessCodes;
+        std::vector<net::ip::udp::socket>   vIn;            // client's in udp port
+        std::vector<net::ip::udp::socket>   vOut;           // client's out udp port
+        std::vector<net::ip::udp::endpoint> vEndpoints;     // endpoint associated with each client
+        std::vector<std::uint32_t>          vUUIDs;         // unique id for each client
+        std::vector<std::uint8_t>           vAccessCodes;   // client's unique access byte (each connection)
 
         void reserve(std::uint32_t count) {
             vIn.reserve(count);
