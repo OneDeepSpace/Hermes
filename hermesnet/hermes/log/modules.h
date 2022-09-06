@@ -12,7 +12,8 @@ namespace utility::logger
         NETLOOP,
         RECEIVER,
         SENDER,
-        MESSAGE     // temp !!!
+        MESSAGE,     // temp !!!
+        CIRCBUF,
         // add more..
     };
 
@@ -25,6 +26,7 @@ namespace utility::logger
             case EModule::NETLOOP:  return "netloop";
             case EModule::RECEIVER: return "receiver";
             case EModule::SENDER:   return "sender";
+            case EModule::CIRCBUF:  return "msgbuf";
             case EModule::MESSAGE:  return "message";
                 // add more..
             default: return "undefined";

@@ -25,59 +25,76 @@ namespace memory
         }
     }
 
-    template<typename Type>
+    template<typename T>
     class RawMemory : boost::noncopyable {
     private:
-        std::size_t cap{0};
-        Type *buffer{nullptr};
+        T*          buffer_   { nullptr };
+        std::size_t capacity_ { 0 };
 
-        static Type *Allocate(std::size_t n) {
-            return static_cast<Type *>(operator new(n));
+        static T* Allocate(std::size_t n) {
+            if (0 == n) return nullptr;
+            return static_cast<T*>(operator new(n * sizeof(T)));
         }
 
-        static void Deallocate(Type *ptr) {
-            operator delete(ptr);
+        static void Deallocate(T* ptr) {
+            return operator delete(ptr);
         }
 
     public:
-        explicit RawMemory(std::size_t size) noexcept {
-            buffer = Allocate(size);
-            cap = size;
-            std::memset(buffer, 0x0, size * sizeof(Type));
+
+        RawMemory() = default;
+
+        explicit RawMemory(std::size_t size = 0) noexcept {
+            buffer_ = Allocate(size);
+            capacity_ = size;
+            std::memset(buffer_, 0x0, size * sizeof(T));
         }
 
-        ~RawMemory() {
-            Deallocate(buffer);
-            cap = 0;
+        RawMemory(const RawMemory&) = delete;
+        RawMemory& operator= (const RawMemory&) = delete;
+
+        RawMemory(RawMemory&& other)  noexcept {
+            if (this != &other) {
+                swap(other);
+            }
+        }
+
+        RawMemory& operator= (RawMemory &&other) noexcept {
+            if (this != &other) {
+                this->swap(other);
+            }
+            return *this;
+        }
+
+        virtual ~RawMemory() {
+            Deallocate(buffer_);
+            capacity_ = 0;
         }
 
         void swap(RawMemory &other) {
-            std::swap(buffer, other.buf_);
-            std::swap(cap, other.size_);
+            std::swap(buffer_, other.buf_);
+            std::swap(capacity_, other.size_);
         }
 
-        RawMemory &operator=(RawMemory &&other) noexcept {
-            this->swap(other);
+        T* operator+ (std::size_t i) {
+            return buffer_ + i;
         }
 
-        Type *operator+(std::size_t i) {
-            return buffer + i;
+        const T* operator+ (std::size_t i) const {
+            return buffer_ + i;
         }
 
-        const Type *operator+(std::size_t i) const {
-            return buffer + i;
+        T& operator[] (std::size_t i) {
+            return buffer_[i];
         }
 
-        Type &operator[](std::size_t i) {
-            return buffer[i];
+        const T& operator[] (std::size_t i) const {
+            return buffer_[i];
         }
 
-        const Type &operator[](std::size_t i) const {
-            return buffer[i];
-        }
-
-        Type *operator*() {
-            return buffer;
+        T* operator* () {
+            return buffer_;
         };
+
     }; // RawMemory
 }

@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
-project(hermesnet VERSION 0.5.5)
+project(hermesnet VERSION 0.5.7)
 
 
 set(SOURCES
 		${HERMESNET_DIR}/hermes/log/log.cpp
+		${HERMESNET_DIR}/hermes/buffers/ring_buffer.cpp
+		${HERMESNET_DIR}/hermes/buffers/exchange_buffer.cpp
 		${HERMESNET_DIR}/hermes/message/message_generator.cpp
 		${HERMESNET_DIR}/hermes/data_receiver/client_data_receiver.cpp
 		${HERMESNET_DIR}/hermes/data_receiver/server_data_receiver.cpp

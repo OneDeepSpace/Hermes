@@ -23,21 +23,19 @@
     Work In Progress..
 
 ## Версия
-    0.5.5
+    0.5.7
 
 ## TODO
     0)  config module -> boost::program_options + {unit}.ini file
-    1)  server class
-    2)  client class
-    3)  message exchange buffer class (main feature)
-    4)  logger -> verbose level
-    5)  event class
-    6)  connection class
-    7)  boost::program_options (config)
-    8)  systemd service server/client
-    9)  jitter udp control
-    10)  RTT udp control
-    N) ........ other pretty stuff
+    1)  message exchange buffer class (main feature)
+    2)  message ring buffer for received/send message
+    3)  logger -> verbose level
+    4)  event class
+    5)  connection class
+    6)  systemd service server/client
+    7)  jitter udp control
+    8)  RTT udp control
+    N)  ...... other pretty stuff
 
 ## special
     - simple game with replication running by raylib

@@ -9,8 +9,8 @@ using namespace utility::logger;
 
 namespace
 {
-    #define LOG(text) \
-            Logger::getInstance().log(EModule::NETLOOP, (text));
+#undef  LOG
+#define LOG(text) Logger::getInstance().log(EModule::NETLOOP, (text));
 }
 
 NetLoop::NetLoop(std::unique_ptr<IReceiver> r, std::unique_ptr<ISender> s)
@@ -39,7 +39,7 @@ void NetLoop::stopThreads()
 {
     bStopNetThreads_.store(true, std::memory_order::memory_order_acquire);
 
-    inThread_.joinable() ? inThread_.join() : void(0);
+    inThread_.joinable()  ? inThread_.join()  : void(0);
     outThread_.joinable() ? outThread_.join() : void(0);
 
     LOG("network threads stopped")
