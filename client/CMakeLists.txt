@@ -27,6 +27,7 @@ link_directories(${LOCAL_LIB_DIRECTORIES})
 # build
 add_executable(${PROJECT_NAME} ${SRC_FILES})
 add_dependencies(${PROJECT_NAME} hermesnet) # make lib before app
+set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBS})
 
 # copy

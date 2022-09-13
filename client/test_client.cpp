@@ -2,15 +2,28 @@
 #include <iostream>
 
 #include <boost/asio.hpp>
+
+#include <hermes/log/log.h>
 #include <hermes/common/types.h>
 #include <hermes/common/common.h>
+#include <hermes/message/service_type_id.h>
 #include <hermes/message/message_generator.h>
 #include <hermes/common/structures.h>
 
+#include <hermes/message/objects/ping.h>
+
+#include "../server/chat_type_id.h"
+
+using namespace network;
+using namespace network::message;
+using namespace network::message::id;
+using namespace network::message::object;
+using namespace utility::logger;
+
 namespace
 {
-#define LOG(text) \
-    utility::logger::Logger::getInstance().log(EModule::CLIENT, (text));
+#undef LOG
+#define LOG(text) utility::logger::Logger::getInstance().log(EModule::CLIENT, (text));
 }
 
 int main()
@@ -25,12 +38,13 @@ int main()
         LOG_REGISTER_MODULE(EModule::MESSAGE)
     }
 
-    namespace net = boost::asio;
     using namespace network;
 
     net::io_service ios_;
-    const std::uint16_t port { 10'000 };
+    const std::uint16_t port { 16'000 };
     const std::string& address = "127.0.0.1";   // todo: get local ip address (such as ifconfig->inet)
+    net::ip::udp::resolver resolver(ios_);
+
     net::ip::udp::endpoint local_endpoint(net::ip::address::from_string(address), port);
 
     boost::system::error_code ec;
@@ -78,55 +92,52 @@ int main()
         const std::string payload {"[test udp message]"};
         const char* pStr = payload.data();
 
-        // with struct point_t
-        using namespace message::v2;
-        message_block_t<service_type> msg_point;
-        msg_point.header.type.action = service_type::action_t::PING;
-        msg_point.header.access_code = 0xEA;
-        msg_point.header.uuid = 42;
-        //msg.insert(pStr, payload.size()); // todo: make helper function for string
-        test::point_t point;
-        point.x = 111;
-        point.y = 333;
-        msg_point.insert(point);
+        // ------------- with struct point_t -------------
+        Header<ServiceType> header;
+        header.type.action = ServiceType::EServiceAction::SERVICE_ACT_PING;
+        header.uuid = 0x42;
+        Body body;
 
-//        // with text
-//        message_block_t<message_id> msg_text;
-//        msg_text.header.type.action = message_id::action_t::CHAT_MESSAGE;
-//        msg_text.header.access_code = 0xEA;
-//        msg_text.header.uuid = 121;
-//
-//        const char* s {"[test udp message]"};
-//        msg_text.insert(s, strlen(s));
+        Datagram<ServiceType> datagram(std::move(header), std::move(body));
+
+        MPing ping;
+        datagram.BodyRef().write(ping, sizeof(ping));
+
+        helper::prepareDatagram(datagram, 0xEA, 0xFF);
+        // --------------------------------- -------------
 
         auto server_endpoint { net::ip::udp::endpoint(net::ip::address::from_string("127.0.0.1"), 7000)};
+        auto resolved_endpoint { *resolver.resolve(server_endpoint, ec).begin() };
         {
             std::stringstream ss;
             ss << "try to send messages to " << server_endpoint;
             LOG(ss.str().c_str())
         }
 
-        // send point
-        auto wrapper_p { boost::asio::buffer(&msg_point, sizeof(msg_point)) };
-        auto sent = socket.send_to(wrapper_p, server_endpoint);
-
-        if (sent > 0)
         {
             std::stringstream ss;
-            ss << "successful sent [" << sent << "] bytes";
+            ss  << ping
+                << "sizeof - " << sizeof(ping) << "\n"
+                << datagram
+                << "sizeof - " << sizeof(datagram) << "\n";
             LOG(ss.str().c_str())
         }
 
-//        // send text
-//        auto wrapper_t { boost::asio::buffer(&msg_text, sizeof(msg_text)) };
-//        sent = socket.send_to(wrapper_t, server_endpoint);
-//
-//        if (sent > 0)
-//        {
-//            std::stringstream ss;
-//            ss << "successful sent [" << sent << "] bytes";
-//            LOG(ss.str().c_str())
-//        }
+
+        auto wrap { boost::asio::buffer(&datagram, sizeof(datagram)) };
+        auto bytes = socket.send_to(wrap, server_endpoint, 0, ec);
+
+        if (ec.failed())
+        {
+            LOG(ec.message().c_str())
+        }
+
+        if (bytes > 0)
+        {
+            std::stringstream ss;
+            ss << "successful sent [" << bytes << "] bytes";
+            LOG(ss.str().c_str())
+        }
     }
 
     {
@@ -135,7 +146,10 @@ int main()
         LOG(ss.str().c_str())
     }
 
-    socket.close();
+    if (socket.is_open())
+    {
+        socket.close();
+    }
 
     return 0;
 }

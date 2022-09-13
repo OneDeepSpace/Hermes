@@ -2,6 +2,7 @@
 #pragma once
 
 #include <chrono>
+#include <utility>
 
 #include <boost/noncopyable.hpp>
 #include <boost/circular_buffer.hpp>
@@ -14,11 +15,17 @@ namespace network::buffer
     template <typename MessageType>
     struct TimedMessage
     {
+        using clock = std::chrono::high_resolution_clock;
+
         TimedMessage() = default;
         explicit TimedMessage(MessageType&& m) noexcept;
 
-        MessageType message;
-        std::chrono::high_resolution_clock::time_point arrivedTime;
+        MessageType         message;        // raw datagram packet
+        clock::time_point   arrivedTime;    // received time point
+
+        void fixTime() {
+            arrivedTime = clock::now();
+        }
     };
 
     /**
@@ -51,12 +58,7 @@ namespace network::buffer
 
 }   // network::buffer
 
-
-// ██████  ███████ ███████ ██ ███    ██ ██ ████████ ██  ██████  ███    ██
-// ██   ██ ██      ██      ██ ████   ██ ██    ██    ██ ██    ██ ████   ██
-// ██   ██ █████   █████   ██ ██ ██  ██ ██    ██    ██ ██    ██ ██ ██  ██
-// ██   ██ ██      ██      ██ ██  ██ ██ ██    ██    ██ ██    ██ ██  ██ ██
-// ██████  ███████ ██      ██ ██   ████ ██    ██    ██  ██████  ██   ████
+// ********************************* IMPLEMENTATION **********************************
 
 #include <hermes/log/log.h>
 

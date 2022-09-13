@@ -49,18 +49,15 @@ namespace network::service
     };  // server
 }   // network
 
-// ██████  ███████ ███████ ██ ███    ██ ██ ████████ ██  ██████  ███    ██
-// ██   ██ ██      ██      ██ ████   ██ ██    ██    ██ ██    ██ ████   ██
-// ██   ██ █████   █████   ██ ██ ██  ██ ██    ██    ██ ██    ██ ██ ██  ██
-// ██   ██ ██      ██      ██ ██  ██ ██ ██    ██    ██ ██    ██ ██  ██ ██
-// ██████  ███████ ██      ██ ██   ████ ██    ██    ██  ██████  ██   ████
+// ********************************* IMPLEMENTATION **********************************
+
 
 #include <memory>
 
-#include <hermes/message/message_block.h>
 
 #include <hermes/log/log.h>
 #include <hermes/common/types.h>
+#include <hermes/message/datagram.h>
 #include <hermes/service/helper/socket_helper.h>
 #include <hermes/data_sender/server_data_sender.h>
 #include <hermes/data_receiver/server_data_receiver.h>
@@ -82,7 +79,7 @@ Server<MessageType>::Server() noexcept
 {
     LOG_REGISTER_MODULE(EModule::SERVER)
 
-    entry_.accessCode = network::message::v2::SERVER_ACCESS_CODE;
+    entry_.accessCode = network::types::SERVER_ACCESS_CODE;
 }
 
 template <typename MessageType>

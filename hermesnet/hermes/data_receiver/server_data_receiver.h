@@ -3,16 +3,19 @@
 #include <cstdint>
 
 #include "interface/ireceiver.h"
+
 #include <hermes/common/types.h>
 #include <hermes/common/structures.h>
 #include <hermes/buffers/ring_buffer.h>
-#include <hermes/message/message_block.h>
+#include <hermes/message/datagram.h>
+#include <hermes/message/service_type_id.h>
 
 #include <boost/noncopyable.hpp>
 #include <boost/asio/ip/udp.hpp>
 
 using namespace network::buffer;
-using namespace network::message::v2;
+using namespace network::message;
+using namespace network::message::id;
 
 namespace network::service
 {
@@ -26,8 +29,8 @@ namespace network::service
     {
     private:
         // typedef
-        using ServiceMessageType = TimedMessage<message_block_t<service_type>>;
-        using ConcreteMessageType = TimedMessage<message_block_t<MessageType>>;
+        using ServiceMessageType  = TimedMessage<Datagram<ServiceType>>;
+        using ConcreteMessageType = TimedMessage<Datagram<MessageType>>;
 
     private:
         class Entry&    refEntry_;
@@ -60,11 +63,7 @@ namespace network::service
 
 }   // network::service
 
-// ██████  ███████ ███████ ██ ███    ██ ██ ████████ ██  ██████  ███    ██
-// ██   ██ ██      ██      ██ ████   ██ ██    ██    ██ ██    ██ ████   ██
-// ██   ██ █████   █████   ██ ██ ██  ██ ██    ██    ██ ██    ██ ██ ██  ██
-// ██   ██ ██      ██      ██ ██  ██ ██ ██    ██    ██ ██    ██ ██  ██ ██
-// ██████  ███████ ██      ██ ██   ████ ██    ██    ██  ██████  ██   ████
+// ********************************* IMPLEMENTATION **********************************
 
 #include <iomanip>
 #include <hermes/log/log.h>
@@ -77,7 +76,7 @@ using namespace network::service;
 using namespace network::types;
 using namespace utility::logger;
 using namespace network::buffer;
-using namespace network::message::v2;
+using namespace network::message;
 
 using namespace utility::bench;
 
@@ -138,10 +137,14 @@ void ServerDataReceiver<MessageType>::readFromEntry(net::ip::udp::socket& socket
     boost::system::error_code ec;
     net::ip::udp::endpoint remote_endpoint;
 
-    ServiceMessageType timedMessage;
-    auto wrapper { boost::asio::buffer(&timedMessage.message, 64) };
+    Header<ServiceType> header;
+    Body body;
+    Datagram<ServiceType> datagram(std::move(header), std::move(body));
+    ServiceMessageType tmDatagram(std::move(datagram));
 
-    auto received = socket.receive_from(wrapper, remote_endpoint, flags, ec);
+    auto wrapper { boost::asio::buffer(&tmDatagram.message, 64) };
+
+    auto bytes { socket.receive_from(wrapper, remote_endpoint, flags, ec) };
 
     if (ec.failed()) {
         std::stringstream ss;
@@ -149,9 +152,19 @@ void ServerDataReceiver<MessageType>::readFromEntry(net::ip::udp::socket& socket
         LOG(ss.str().c_str())
     }
 
-    /*
-    if (MESSAGE_SIZE != received) return {};
+    if (64 != bytes) return;
 
+    // .... test ....
+    {
+        std::stringstream ss;
+        ss << "bytes received on tick - " << bytes;
+        LOG(ss.str().c_str())
+    }
+    // ...............
+
+    tmDatagram.fixTime();
+
+    /*
     if (!validateData(chunk, code)) return {};
 
     {
@@ -161,31 +174,33 @@ void ServerDataReceiver<MessageType>::readFromEntry(net::ip::udp::socket& socket
     }
     */
 
-    // [testing section - begin]
-    if (received > 0)
+    // [TEST SECTION - BEGIN]
+    if (bytes > 0)
     {
         {
             std::stringstream ss;
-            ss  << "recevied message [" << std::chrono::system_clock::to_time_t(timedMessage.arrivedTime) <<  "]:\n"
-                << timedMessage.message << "\n";
+            ss  << "recevied message [" << std::chrono::system_clock::to_time_t(tmDatagram.arrivedTime) <<  "]:\n"
+                << tmDatagram.message << "\n";
 
             LOG(ss.str().c_str())
         }
 
-        if (timedMessage.message.header.type.action == message::v2::service_type::action_t::PING) {
-            test::point_t point_received;
-            timedMessage.message.extract(point_received);
+        if (ServiceType::EServiceAction::SERVICE_ACT_PING == tmDatagram.message.HeaderRef().type.action)
+        {
+            test::point_t pointReceived;
+            tmDatagram.message.BodyRef().read(pointReceived, sizeof(pointReceived));
+            //timedMessage.message.extract(point_received);
 
             std::stringstream ss;
-            ss << "received point: " << point_received;
+            ss << "received point: " << pointReceived;
             LOG(ss.str().c_str())
         }
     }
-    // [testing section - end]
+    // [TEST SECTION - END]
 
     if (not serviceInBuf_.full())
     {
-        serviceInBuf_.storeElem(std::forward<decltype(timedMessage)>(timedMessage));
+        serviceInBuf_.storeElem(std::forward<ServiceMessageType>(tmDatagram));
     }
 }
 
@@ -207,7 +222,7 @@ void ServerDataReceiver<MessageType>::readFromClients(std::vector<net::ip::udp::
     const auto flags {0};
     std::size_t received {0};
     boost::system::error_code ec;
-    std::vector<std::uint8_t> chunk (MESSAGE_SIZE, 0x0); // type -> message_block_t<message_id_t>
+    std::vector<std::uint8_t> chunk (64, 0x0); // type -> message_block_t<message_id_t>
 
     const auto count = sockets.size();
     for (std::size_t i = 0; i < count; ++i)

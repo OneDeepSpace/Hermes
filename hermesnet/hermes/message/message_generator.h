@@ -1,37 +1,61 @@
 #pragma once
 
-#include "message_block.h"
+#include <chrono>
+#include <vector>
+#include <string_view>
 
-namespace network::message::v2
+#include <hermes/common/types.h>
+#include <hermes/message/helper.h>
+#include <hermes/message/service_type_id.h>
+#include <hermes/message/datagram.h>
+
+#include <hermes/message/objects/ping.h>
+#include <hermes/message/objects/connect.h>
+#include <hermes/message/objects/disconnect.h>
+#include <hermes/message/objects/accept_connect.h>
+#include <hermes/message/objects/decline_connect.h>
+
+
+namespace network::message
 {
+
     /*
-     *  Net message builder
-     */
-    template<typename MessageTypeId>
-    class MessageGenerator
+
+    template <typename Type, typename Data>
+    std::vector<Datagram<Type>> generate(typename Type::header::type id, Data data)
     {
-    public:
-        // Сгенерировать сообщение(-я) в зависимости от Типа сообщений приложения и размера полезной нагрузки.
-        // Если размер payload'a больше чем может вместить одно сообщение - создаётся необходимое
-        // количество сетевых пакетов для отправки.
-        template <typename PayloadType>
-        static std::vector<message_block_t<MessageTypeId>>
-        generate(MessageTypeId typeId, PayloadType payload, std::size_t len) noexcept;
+        std::uint32_t count { 0 };
+        {
+            const std::uint32_t cached { data.size() };
+            auto preliminary { cached / CAPACITY };
+            const bool rest { (cached % CAPACITY) == 0 };
+            count = rest ? preliminary : ++preliminary;
+        }
 
+        std::vector<Datagram<Type>> messages;
+        messages.reserve(count);
 
+        std::uint32_t stored { 0 };
+        std::uint32_t to_write { count > 1 ? CAPACITY : data.size() };
 
-    };
+        for (std::uint32_t i = 1; i < count + 1; ++i) {
+            Datagram<Type> msg;
 
+            msg.header.type = id;
+            msg.header.uuid = 0x1;
+            msg.header.access_code = SERVER_ACCESS_CODE;
+            msg.header.block_num = i;
+            msg.header.block_count = count;
+            msg.header.encode = false;
+            msg.header.compress = false;
 
+            auto&[ok, writed, free] = msg.write_n(data, to_write);
+            to_write -= i * CAPACITY - stored;
 
-//    /**
-//     * Подготовить сетевой пакет к отправке установив байты
-//     * доступа к серверу и конца сообщения.
-//     */
-//    static inline void setMessageValidateBytes(message_block_t<message_id>& block) {
-//        // todo: !!!
-//        std::memset(&block + ACCESS_BYTE_POS, SERVER_ACCESS_CODE, 1);
-//        std::memset(&block + END_MESSAGE_BYTE_POS, END_MESSAGE_BYTE, 1);
-//    }
+            messages.emplace_back(std::move(msg));
+        }
 
+        return messages;
+    }
+    */
 }

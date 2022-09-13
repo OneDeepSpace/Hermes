@@ -4,15 +4,18 @@
 
 #include <iostream>
 #include <exception>
+
+#include "chat_type_id.h"
+
 #include <hermes/log/log.h>
-
+#include <hermes/common/types.h>
 #include <hermes/service/server/server.h>
-//#include <hermes/service/server/server.cpp>
+#include <hermes/message/message_generator.h>
 
-#include <hermes/message/message_id.h>
+using namespace app::message::id;
 
 using namespace network::service;
-using namespace network::message::v2;
+using namespace network::message;
 using namespace utility::logger;
 
 namespace
@@ -34,8 +37,8 @@ int main()
 
     try
     {
-        Server<chat_app_type> server;
-        server.start( {7000, 7001} );
+        Server<ChatType> server;
+        server.start({ SERVER_IN_PORT, SERVER_OUT_PORT });
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10'000));
     }
