@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace network::message::v2::object
+namespace network::message::object
 {
 
     /* ----------------- Decline message object ------------------

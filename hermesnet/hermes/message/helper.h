@@ -28,6 +28,7 @@ namespace network::message::helper
         const bool sc { 64 == sizeof(datagram) };
         const bool ac { code == datagram.HeaderRef().access_code };
         const bool ec { last == datagram.Data()[END_MESSAGE_BYTE_POS] };
+
         return sc and ac and ec;
     }
 

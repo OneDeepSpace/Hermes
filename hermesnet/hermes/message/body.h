@@ -80,7 +80,7 @@ namespace network::message
         std::size_t free { CAPACITY - size };
         assert(n <= free);
 
-        memory::memcpy(buf.data() + size, &src, n);
+        memory::memcpy(&buf + size, &src, n);
         size += n;
         free -= n;
 
@@ -92,17 +92,23 @@ namespace network::message
     {
         assert(n <= size);
 
-        memory::memcpy(&dst, buf.data() + size - n, n);
+        memory::memcpy(&dst, &buf + size - n, n);
         size -= n;
 
         return { true, n, (CAPACITY - size) };
     }
 
     std::ostream& operator<< (std::ostream& os, Body const& b) {
+
+        auto asHex = [&os](std::uint8_t b) -> void {
+            os  << "0x" << std::hex << std::setw(2) << std::setfill('0')
+            << std::uppercase << static_cast<unsigned>(b) << ' ' << std::dec;
+        };
+
         os  << "body:\n"
             << "  size - " << b.size << "\n"
             << "  data - ";
-        std::copy(std::begin(b.buf), std::end(b.buf), std::ostream_iterator<std::uint8_t>(os, " "));
+        std::for_each(std::begin(b.buf), std::end(b.buf), asHex);
         os << "\n";
         return os;
     }

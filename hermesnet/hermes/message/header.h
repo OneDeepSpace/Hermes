@@ -1,8 +1,9 @@
 
 #pragma once
 
-#include <iostream>
 #include <cstdint>
+#include <iomanip>
+#include <iostream>
 
 namespace network::message
 {
@@ -63,12 +64,22 @@ namespace network::message
 
     template <typename IdType>
     std::ostream& operator<< (std::ostream& os, Header<IdType> const& h) {
+
+        auto asHex = [&os](std::uint8_t b) -> void {
+            os  << "0x" << std::hex << std::setw(2) << std::setfill('0')
+                << std::uppercase << static_cast<unsigned>(b) << std::dec;
+        };
+
+        auto asInt = [&os](std::uint8_t b) -> void {
+            os << std::dec << static_cast<unsigned>(b);
+        };
+
         os  << "header:\n"
             << "  type        - " << h.type << "\n"
-            << "  uuid        - " << h.uuid << "\n"
-            << "  block_num   - " << h.block_num << "\n"
-            << "  block_count - " << h.block_count << "\n"
-            << "  access_code - " << h.access_code << "\n"
+            << "  uuid        - " ; asHex(h.uuid); os << "\n"
+            << "  block_num   - " ; asInt(h.block_num); os << "\n"
+            << "  block_count - " ; asInt(h.block_count); os << "\n"
+            << "  access_code - " ; asHex(h.access_code); os << "\n"
             << "  encode      - " << (h.encode ? "true" : "false") << "\n"
             << "  compress    - " << (h.compress ? "true" : "false") << "\n";
         return os;

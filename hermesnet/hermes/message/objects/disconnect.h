@@ -9,7 +9,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/lexical_cast.hpp>
 
-namespace network::message::v2::object
+namespace network::message::object
 {
 
     /* --------------- Disconnect message object ----------------

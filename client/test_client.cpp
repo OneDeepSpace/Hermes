@@ -96,12 +96,18 @@ int main()
         Header<ServiceType> header;
         header.type.action = ServiceType::EServiceAction::SERVICE_ACT_PING;
         header.uuid = 0x42;
+        header.block_num = 7;
+        header.block_count = 10;
         Body body;
 
         Datagram<ServiceType> datagram(std::move(header), std::move(body));
 
         MPing ping;
-        datagram.BodyRef().write(ping, sizeof(ping));
+        ping.setStart();
+        std::this_thread::sleep_for(std::chrono::milliseconds(144));
+        ping.setEnd();
+
+        auto[ok, wrote, free] = datagram.BodyRef().write(ping, sizeof(ping));
 
         helper::prepareDatagram(datagram, 0xEA, 0xFF);
         // --------------------------------- -------------

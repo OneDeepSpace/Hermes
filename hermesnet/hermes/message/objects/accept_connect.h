@@ -2,8 +2,10 @@
 #pragma once
 
 #include <cstdint>
+#include <iomanip>
+#include <iostream>
 
-namespace network::message::v2::object
+namespace network::message::object
 {
 
     /* ------------------- Accept message object ------------------
@@ -38,8 +40,13 @@ namespace network::message::v2::object
         }
 
         friend std::ostream& operator<< (std::ostream& os, MAcceptConnect const& ac) {
+
+            auto asHex = [&os](std::uint8_t b) -> void {
+                os << "0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned>(b) << std::dec;
+            };
+
             os  << "MAcceptConnect:\n"
-                << "  access code: " << ac.clientAccessCode_ << "\n"
+                << "  access code: " ; asHex(ac.clientAccessCode_); os << "\n"
                 << "  client port: " << ac.port_ << "\n";
             return os;
         }

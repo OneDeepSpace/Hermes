@@ -9,6 +9,7 @@
 #include <hermes/buffers/ring_buffer.h>
 #include <hermes/message/datagram.h>
 #include <hermes/message/service_type_id.h>
+#include <hermes/message/objects/ping.h>
 
 #include <boost/noncopyable.hpp>
 #include <boost/asio/ip/udp.hpp>
@@ -50,10 +51,6 @@ namespace network::service
     private:
         // Получить количество доступных байт для чтения без блокировки
         inline std::size_t isDataReady(const boost::asio::ip::udp::socket& socket) final;
-
-        // Проверить доступ сообщения
-        //inline bool validateData(std::vector<std::uint8_t>& data, std::uint8_t code);
-
         // Прочитать ассоциированные с удаленной точкой данные с входного сокета сервера
         void readFromEntry(net::ip::udp::socket& socket, std::uint8_t code);
         // Прочитать данные от всех клиентов
@@ -130,21 +127,23 @@ inline std::size_t ServerDataReceiver<MessageType>::isDataReady(const boost::asi
 template<typename MessageType>
 void ServerDataReceiver<MessageType>::readFromEntry(net::ip::udp::socket& socket, std::uint8_t code)
 {
-    if (not isDataReady(socket))
-        return;
+    // check available data on socket
+    if (not isDataReady(socket)) return;
 
+    // prepare datagram
     const auto flags {0};
     boost::system::error_code ec;
     net::ip::udp::endpoint remote_endpoint;
 
     Header<ServiceType> header;
     Body body;
+
     Datagram<ServiceType> datagram(std::move(header), std::move(body));
     ServiceMessageType tmDatagram(std::move(datagram));
 
-    auto wrapper { boost::asio::buffer(&tmDatagram.message, 64) };
-
-    auto bytes { socket.receive_from(wrapper, remote_endpoint, flags, ec) };
+    // try to get data
+    auto buf   { boost::asio::buffer(&tmDatagram.message, DATAGRAM_SIZE) };
+    auto bytes { socket.receive_from(buf, remote_endpoint, flags, ec) };
 
     if (ec.failed()) {
         std::stringstream ss;
@@ -152,34 +151,20 @@ void ServerDataReceiver<MessageType>::readFromEntry(net::ip::udp::socket& socket
         LOG(ss.str().c_str())
     }
 
-    if (64 != bytes) return;
-
-    // .... test ....
-    {
-        std::stringstream ss;
-        ss << "bytes received on tick - " << bytes;
-        LOG(ss.str().c_str())
-    }
-    // ...............
+    // validation
+    const bool valid { message::helper::validateDataram(tmDatagram.message) };
+    if (not valid) return;
 
     tmDatagram.fixTime();
-
-    /*
-    if (!validateData(chunk, code)) return {};
-
-    {
-        std::stringstream ss;
-        ss << "received data test [" << chunk.size() << "]: " << chunk.data() << " from " << remote_endpoint;
-        LOG_SERVER(ss.str())
-    }
-    */
 
     // [TEST SECTION - BEGIN]
     if (bytes > 0)
     {
         {
             std::stringstream ss;
-            ss  << "recevied message [" << std::chrono::system_clock::to_time_t(tmDatagram.arrivedTime) <<  "]:\n"
+            auto tm { std::chrono::system_clock::to_time_t(tmDatagram.arrivedTime) };
+            ss  << "recevied message [" << std::put_time(std::localtime(&tm), "%F %T") <<  "]:\n"
+                << std::flush
                 << tmDatagram.message << "\n";
 
             LOG(ss.str().c_str())
@@ -187,17 +172,18 @@ void ServerDataReceiver<MessageType>::readFromEntry(net::ip::udp::socket& socket
 
         if (ServiceType::EServiceAction::SERVICE_ACT_PING == tmDatagram.message.HeaderRef().type.action)
         {
-            test::point_t pointReceived;
-            tmDatagram.message.BodyRef().read(pointReceived, sizeof(pointReceived));
-            //timedMessage.message.extract(point_received);
+            using namespace object;
+            MPing ping;
+            tmDatagram.message.BodyRef().read(ping, sizeof(ping));
 
             std::stringstream ss;
-            ss << "received point: " << pointReceived;
+            ss << "received ping object:\n" << ping;
             LOG(ss.str().c_str())
         }
     }
     // [TEST SECTION - END]
 
+    // store
     if (not serviceInBuf_.full())
     {
         serviceInBuf_.storeElem(std::forward<ServiceMessageType>(tmDatagram));
@@ -241,17 +227,6 @@ void ServerDataReceiver<MessageType>::readFromClients(std::vector<net::ip::udp::
             reset(chunk, received);
             continue;
         }
-
-        /*
-        if (MESSAGE_SIZE > received) {
-            reset(chunk, received);
-            continue;
-        }
-
-        if (!validateData(chunk, codes[i])) {
-            continue;
-        }
-         */
 
         extract(chunk);
     } // loop
