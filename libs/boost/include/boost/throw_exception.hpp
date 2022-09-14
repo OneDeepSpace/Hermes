@@ -158,6 +158,7 @@ template<class E> BOOST_NORETURN void throw_exception( E const & e, boost::sourc
 template<class E> BOOST_NORETURN void throw_exception( E const & e )
 {
     throw_exception_assert_compatibility( e );
+
     throw wrapexcept<E>( e );
 }
 

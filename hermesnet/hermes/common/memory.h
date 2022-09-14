@@ -7,9 +7,11 @@
 namespace memory
 {
     inline void memcpy(void *dst, void *src, std::size_t n) noexcept {
-        using ptr = std::uint8_t *;
+        using ptr = std::uint8_t* ;
         auto dst_ = reinterpret_cast<ptr>(dst);
         auto src_ = reinterpret_cast<ptr>(src);
+        assert(nullptr != dst_);
+        assert(nullptr != src_);
         for (std::size_t i = 0; i < n; ++i) {
             dst_[i] = src_[i];
         }
@@ -19,6 +21,8 @@ namespace memory
         using ptr = std::uint8_t *;
         auto dst_ = reinterpret_cast<ptr>(dst);
         auto src_ = reinterpret_cast<ptr>(src);
+        assert(nullptr != dst_);
+        assert(nullptr != src_);
         for (std::size_t i = 0; i < n; ++i) {
             std::swap(dst_[i], src_[i]);
             std::memset(src_, 0x0, 1);

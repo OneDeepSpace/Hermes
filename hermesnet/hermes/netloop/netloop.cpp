@@ -37,12 +37,15 @@ bool NetLoop::runThreads()
 
 void NetLoop::stopThreads()
 {
-    bStopNetThreads_.store(true, std::memory_order::memory_order_acquire);
+    if (not bStopNetThreads_)
+    {
+        bStopNetThreads_.store(true, std::memory_order::memory_order_acquire);
 
-    inThread_.joinable()  ? inThread_.join()  : void(0);
-    outThread_.joinable() ? outThread_.join() : void(0);
+        inThread_.joinable()  ? inThread_.join()  : void(0);
+        outThread_.joinable() ? outThread_.join() : void(0);
 
-    LOG("network threads stopped")
+        LOG("network threads stopped")
+    }
 }
 
 void NetLoop::processIncoming()
